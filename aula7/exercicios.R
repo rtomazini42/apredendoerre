@@ -56,3 +56,15 @@ mean(MaleSparrows$Tarsus)
 median(FemeSparrows$Tarsus)
 median(MaleSparrows$Tarsus)
 
+which(is.na(Sparrows$Wing))
+
+str(Sparrows[64,])
+Sparrows[64,3] <- 59
+Sparrows[250,3] <- 56.5
+Sparrows[806,3] <- 57
+
+
+mean(Sparrows$Wing)
+
+
+Sparrows_Ordenado<-Sparrows[order(Sparrows$Wing,Sparrows$Head),]
