@@ -48,7 +48,7 @@ Data[1,] <- c("José",30)
 Data
 
 #fatiamento
-survey2[1,]
+survey2[1:3,]
 survey2[,3]
 survey2[1:5, 2]
 
