@@ -9,10 +9,10 @@ library(wordcloud)
 
 #chaves de acesso
 
-API_Key <- "BXuSQLKbjHYyUZxofH7nbcLko"
-API_Key_Secret <- "PeLhCBrm1Pdxt7DTFHWKuESvMwAV5RvioWY36XNisXHOcHRuht"
-Access_Token <- "153453487-U6kiXKH64TYlJnt7KT4gNHURl7oMZbhGJH8aK9Hq"
-Access_Token_Secret <- "76bg8RjNFJq7RAzniI2f7X3OCaCpNCtMioRovpyyakZ5r"
+API_Key <- ""
+API_Key_Secret <- ""
+Access_Token <- ""
+Access_Token_Secret <- ""
 
 token <- create_token(app= "ape_is_not_monkey",
                       
