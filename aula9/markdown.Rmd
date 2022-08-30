@@ -1,0 +1,126 @@
+---
+title: "Aula 9"
+author: "Renan Tomazini"
+date: '2022-08-29'
+output: html_document
+bibliography : D:\\Users\\Tomazini\\Documents\\programando\\erre\\aprendendoerre\\aula9\\bib.bib
+---
+
+
+# Título
+## Título 2
+### Título 3
+#### Título 4
+
+
+Texto em **Negrito**
+Texto em *Itálico*
+Código 
+`Print Hello world`
+
+Inclusão de link: [Rural](www.ufrpe.br)
+
+# Abas {.tabset}
+
+## Aba de A
+Aaa aa aaa aaaa aaaaa Aaa aa aaa aaaa aaaaa Aaa aa aaa aaaa aaaaa Aaa aa aaa aaaa aaaaa
+
+## Aba de b
+Bbb b bbb bbbb bbbbbb Bbb b bbb bbbb bbbbbb Bbb b bbb bbbb bbbbbb Bbb b bbb bbbb bbbbbb Bbb b bbb bbbb bbbbbb
+
+
+# Chunks
+São blocos de códigos executados quando o documento é compilado. Para inserir basta:
+` {r nome do chunk}
+  <código>
+`
+
+Aqui tem um gráfico:
+``` {r}
+hist(iris[[2]])
+```
+
+## Opções em Chunks
+echo: Inclui o código do chunk (TRUE) ou não (FALSE) no documento compilado.
+
+results: Se results=“hide” os resultados não são apresentados, mas o código é apresentado.
+
+include:Determina se o chunk e a saída serão apresentados no documento final.Seinclude=FALSE nemo código nem o resultado será mostrado.
+
+warning, messagee error: Se irá mostrar mensagens, warnings ou erros.
+
+
+
+```{r chunk_name, echo=FALSE}
+x <- rnorm(100)
+y <- 2*x + rnorm(100)
+cor(x,y)
+
+
+```
+
+
+```{r chunk_name2, results=FALSE}
+x <- rnorm(100)
+y <- 2*x + rnorm(100)
+cor(x,y)
+
+
+```
+
+```{r chunk_name3, include=FALSE}
+x <- rnorm(100)
+y <- 2*x + rnorm(100)
+cor(x,y)
+
+
+```
+
+```{r chunk_name4,fig.width= 6, fig.height=4}
+x <- rnorm(100)
+y <- 2*x + rnorm(100)
+cor(x,y)
+
+
+```
+
+## Código in-line
+Obter o valor a partir do código.
+Existem  `r nrow(iris)` opções em iris
+
+## Tabelas
+```{r}
+head(iris)
+
+
+```
+
+## inserir figura
+![Figura](https://img.shields.io/badge/-Git-ff0000?logo=Git&logoColor=ffffff&style=flat)
+
+
+## Equações
+Use Latex, exemplos:
+$Y = \beta_0 +beta_1 x + \epsilon$
+
+
+Para centralizar em linha própria: 
+$$Y = \beta_0 +beta_1 x + \epsilon$$
+
+
+## Criando referências
+Para usar o recurso é necessário especificar o nome do arquivo (.bib) usando o campo bibliographu no cabeçalho do documento.
+Pegar o id do trabalho, usar a @ na frente em qualquer parte do documento para ele aparecer nas referencias finais.
+
+### Citar o trabalho:
+Basta colocar a arroba a referencia após o texto @redmalm2014holy
+Dessa forma @allaire2012rstudio
+e dessa @dhar2013data
+@verzani2011getting
+
+## RPubs
+Publicar os relatorios no RPubs
+
+
+
+# Referências

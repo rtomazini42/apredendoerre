@@ -99,3 +99,4 @@ mtcars %>%
   group_by(vs,am)%>%
   filter(cyl>4)%>%
   summarise(media=mean(mpg), median(mpg))
+
