@@ -1,0 +1,67 @@
+---
+title: "Atividade"
+author: "Renan Tomazini"
+date: "2022-08-28"
+output:
+  html_document:
+    self_contained: no
+bibliography: /home/renan/Documentos/r-studio/aprendendoerre/Atividade/bib.bib
+---
+
+# Atividade R Markdown e Mineração de Texto
+
+``` {r blibiotecas ,include=FALSE} 
+#pacotes a serem instalados
+install.packages("tm")
+install.packages("wordcloud")
+install.packages("readr")
+library(tm)
+library(wordcloud)
+library(readr)
+
+```
+
+## Atividade 1 - Nuvem de palavra do discurso “Eu tenho um sonho” de Martin Luther King Jr. Também plote as palavras mais frequentes.
+```{r atividade1,fig.width= 6, fig.height=6, warning=FALSE}
+discurso = read.delim("discurso_mlk.txt", header=FALSE)
+
+
+VS <- VectorSource(discurso)
+corpus <- Corpus(VS)
+
+#removendo minúsculos
+corpus <- tm_map(corpus, content_transformer(tolower))
+
+#removendo pontuação
+corpus <- tm_map(corpus, removePunctuation)
+
+#removendo espaços extras em branco
+corpus <- tm_map(corpus, stripWhitespace)
+
+#remover numeros
+corpus <- tm_map(corpus, removeNumbers)
+
+#remover stopwords
+corpus <- tm_map(corpus, removeWords, stopwords('portuguese'))
+
+#converter para o formato de matrix
+
+tdm <- as.matrix(TermDocumentMatrix(corpus))
+
+#Fornecer as frequencias ordenadas de cada palavra
+
+fre <- sort(rowSums(tdm), decreasing = TRUE)
+
+#escolhedo um subconjunto dos dados
+aux<- subset(fre, fre>2)
+
+#plotar gráfico de barras
+barplot(aux, las=2, col = rainbow(10))
+
+
+wordcloud(corpus, min.freq = 1, max.words = Inf,
+          random.order = FALSE, rot.per = 0.35,
+          colors=brewer.pal(5,"Dark2"))
+
+```
+
