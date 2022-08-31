@@ -33,6 +33,10 @@ auth_setup_default()
 #consultando o twitter
 tweets <- search_tweets("Brasil", n=500, lang="pt")
 
+#salvando dataFrame
+#save(tweets,file="datTweetsBrasil.Rda")
+saveRDS(tweets, file="datTweetsBrasil.Rda")
+
 #colapsando todos os twittes em um vetor de uma posição
 tweets_t <- paste(tweets$text, collapse = " ")
 
@@ -65,4 +69,6 @@ dtm <- as.matrix(dtm)
 
 fre <- sort(rowSums(dtm), decreasing = TRUE)
 
-write.csv(fre, "brasilTweets.csv", row.names = FALSE)
+write.csv(fre, "brasilTweets.csv", row.names = TRUE)
+#write_delim(tweets_t, "brasilTweetsTexto.txt")
+writeLines(tweets_t, "brasilTweetsTexto.txt")         
