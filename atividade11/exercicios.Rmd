@@ -1,0 +1,483 @@
+---
+title: "Exercício 12 [Visualização de Dados]"
+author: "Renan Tomazini"
+date: '2022-09-03'
+output: html_document
+---
+
+``` {r blibiotecas ,include=FALSE} 
+#pacotes a serem instalados
+library(plotly)
+
+```
+
+# Questões {.tabset}
+
+## Questão 1
+
+(20 pontos) Use os dados abaixo para gerar os gráficos.  Para o segundo gráfico (barras), use a escala logarítmica (log = "y") e as seguintes cores: "#E6E6E6", "#666666". Além disso, os gráficos podem ser organizados com a função layout(). Ver exemplos do uso da função layout() em: https://stackoverflow.com/questions/38810854/how-to-use-layout-function-in-r e https://bookdown.org/ndphillips/YaRrr/arranging-plots-with-parmfrow-and-layout.html.
+
+
+``` {r questão_1} 
+
+MRT_1F <-c(517.1468515630205, 85.13094142168089, 30.333207896694553, 12.694776264558937, 3.3041601673945418, 1.1823111717498882, 1.1892293502386786)
+
+MRT_3F <-c(156.68929936163462, 11.540837783562276, 0.4512835621696538, 0.4509797929766453, 0.4502068233039181, 0.4496185276300172, 0.4543157082191288)
+
+MRT_5F <-c(83.90319666471157, 0.3068151086494968, 0.30522314133037304, 0.3072588968084928, 0.30655265997285697, 0.3055812715727718, 0.3053297166713006)
+
+MRT_10F <-c(29.55430642951759, 0.19832832665772515, 0.1971923924717474, 0.19796648905716516, 0.19615594370806338, 0.2034569237883263, 0.19617420889447737)
+
+MRT_15F <-c(11.317736530583566, 0.167364215666193, 0.16172168266811013, 0.16701085329580515, 0.1598052657153692, 0.1645934043532696, 0.16216563797118075)
+
+MRT_sem_F <-c(11.93430909937736, 0.6095414637034009, 0.6060645101029295, 0.612167181646899, 0.6146761002685637, 0.6096747087200697, 0.6125810476877268)
+
+clock <- c(0.1, 0.5, 1, 1.5, 2, 2.5, 3)
+
+x <- c(MRT_1F,MRT_3F,MRT_5F,MRT_10F,MRT_15F,MRT_sem_F)
+
+plot(y=MRT_1F,x=clock,
+     ylab = "Response Time (sec)", 
+       xlab = "Time between Things requests(seconds)", col='brown',pch=0,type="o")
+lines(y=MRT_3F,x=clock, type = "o", col='yellow',pch=1, lty=2)
+lines(y=MRT_5F,x=clock, type = "o",col='red',pch=2)
+lines(y=MRT_10F,x=clock, type = "o",col='purple',pch=3)
+lines(y=MRT_15F,x=clock, type = "o",col='blue',pch=4)
+lines(y=MRT_sem_F,x=clock, type = "o",col='orange',pch=5)
+
+
+legend("topright", pch = c(0,1,2,3,4,5),
+       col = c("brown","yellow","red","purple","blue","orange"),lty=1,
+       legend = c("1 frog", "2 frogs","3 frogs","5 frogs","10 frogs","15 frogs","w/o frogs")
+)
+```
+
+### Gráficos de barra
+
+```{r questão_1_barras,questão_1 }
+
+
+colors <- c( "#E6E6E6","#666666")
+values<- matrix(c(MRT_sem_F,MRT_1F), nrow = 2, ncol=7,byrow= TRUE)
+
+#### Gráfico 1
+barplot(values, log = "y", col= colors,ylab = "Response Time (sec)", xlab ="Time between requests", names.arg = clock ,beside= T)
+
+legend("topright",pch = 15, col=colors, legend=c("w/o Frogs", "1 Frog"))
+
+values<- matrix(c(MRT_sem_F,MRT_3F), nrow = 2, ncol=7,byrow= TRUE)
+
+#### Gráfico 2
+values<- matrix(c(MRT_sem_F,MRT_3F), nrow = 2, ncol=7,byrow= TRUE)
+barplot(values, log = "y", col= colors,ylab = "Response Time (sec)", xlab ="Time between requests", names.arg = clock ,beside= T)
+
+legend("topright",pch = 15, col=colors, legend=c("w/o Frogs", "3 Frogs"))
+
+#### Gráfico 3
+values<- matrix(c(MRT_sem_F,MRT_5F), nrow = 2, ncol=7,byrow= TRUE)
+barplot(values, log = "y", col= colors,ylab = "Response Time (sec)", xlab ="Time between requests", names.arg = clock ,beside= T)
+
+legend("topright",pch = 15, col=colors, legend=c("w/o Frogs", "5 Frogs"))
+
+#### Gráfico 4
+values<- matrix(c(MRT_sem_F,MRT_10F), nrow = 2, ncol=7,byrow= TRUE)
+barplot(values, log = "y", col= colors,ylab = "Response Time (sec)", xlab ="Time between requests", names.arg = clock ,beside= T)
+
+legend("topright",pch = 15, col=colors, legend=c("w/o Frogs", "10 Frogs"))
+
+#### Gráfico 5
+values<- matrix(c(MRT_sem_F,MRT_15F), nrow = 2, ncol=7,byrow= TRUE)
+barplot(values, log = "y", col= colors,ylab = "Response Time (sec)", xlab ="Time between requests", names.arg = clock ,beside= T)
+
+legend("topright",pch = 15, col=colors, legend=c("w/o Frogs", "15 Frogs"))
+
+```
+
+## Questão 2
+Para a tabela abaixo que classifica a qualidade de refeição de acordo com categorias de preços crie um gráfico de barras empilhadas.
+```{r questao_2}
+#como é a tabela
+tab <- matrix(c(53.8, 33.9, 2.6, 0.0, 43.6, 54.2, 60.5, 21.4, 2.6,11.9,36.8,78.6), ncol=4, byrow=TRUE)
+colnames(tab) <- c('$10-19','$20-29','$30-39','$40-49')
+rownames(tab) <- c('Good','Very Good','Excellent')
+
+
+#Gráfico barras
+colors = c("red","blue","yellow")
+barplot(main="Quality rating",tab, col= colors, names.arg = colnames(tab) ,beside= F)
+
+
+legend("bottom",pch = 15,title = "Quality", col=colors,cex = 0.5, legend=rownames(tab), horiz = T, xpd = T, inset = c(0,-0.32))
+
+```
+
+
+
+## Questão 3
+Faça o histograma das temperaturas do mês de maio do dataset airquality. No entanto, primeiro converta as temperaturas para graus Celsius através da expressão °C = (°F − 32) / 1.8. Após isso, gere o histograma.  Também  adicione  título, nomes de eixos, cor e curva de densidade.
+``` {r questao_3}
+
+maio <- airquality[airquality$Month==5,]
+maio$Temp <- (maio$Temp - 32) /1.8
+hist(maio$Temp, freq = F, main = "Temperatura em Maio",
+     xlab = "Temperatura Celsius",
+     ylab = "Densidade",
+     col = c('#ffffff','#ffff99','#ffe48e','#ffcc33','#8db57d','#6d945d','#ee6600','#990000'))
+
+densityTemp <- density(maio$Temp)
+lines(densityTemp)
+
+```
+
+
+## Questão 4
+Crie um gráfico de pizza com a porcentagem da tabela total de vendas por país. Use o dataset abaixo. Inclua a porcentagem de cada fatia, as cores das fatias e o nome do gráfico. Adicionalmente, use o comando legend() para incluir a legenda do gráfico.
+
+```{r questao_4}
+sales <- read.table("https://training-course-material.com/images/8/8f/Sales.txt",header=TRUE)
+
+
+pct <- round(sales$SALES/sum(sales$SALES)*100)
+lbls <- paste(pct,"%", sep="")
+
+pie(sales$SALES,lbls, main = "Sales by country",
+    col=rainbow(6))
+
+legend("topright", legend = sales$COUNTRY, cex =0.8, fill=rainbow(length(sales$COUNTRY)))
+
+```
+
+## Questão 5
+Utilize os dados de contagens de insetos em unidades experimentais agrícolas tratados com inseticidas diferentes disponível no R em InsectSprays e construa um boxplot  sem a presença dos outliers para os 6 tipos de inseticidas. Coloque título e nomes de eixos adequados. Além disso, as caixas devem ser preenchidas com a cor “yellow”.
+```{r questao_5}
+
+boxplot(count ~ spray, data=InsectSprays,
+        xlab = "Tipo de spray",
+        ylab = "Contagem de insetos",
+        main="Dados por tipo de spray",
+        outline = F,
+        col="yellow")
+
+```
+
+## Questão 6
+Gere os gráficos abaixo a partir dos seguintes dados: monitoringCloudData_0.1.csv, monitoringCloudData_0.5.csv, monitoringCloudData_1.csv e monitoringCloudData_NONE.csv. Esses dados consistem de informações de monitoramento dos recursos de uma máquina virtual. Basicamente, é necessário gerar gráficos de linha do tempo de coleta dos recursos (currentTime) em relação a memória usada (usedMemory). Porém, é necessário ajustar a coluna “currentTime” para que o tempo fique contínuo e a coluna “usedMemory” para que todas as informações fiquem megabytes. Por fim, use a função layout() para organizar os gráficos. Dica 1: use a função difftime() para calcular a diferença do tempo em horas. Dica 2: use os conceitos vistos na aula de string/regex para converter os dados na coluna “usedMemory” para apenas megabytes. Além disso, considere que um terabyte equivale a 1000000 megabytes e 1 gigabyte equivale a 1024 megabytes.
+```{r questao_6, warning=FALSE}
+library(stringr)
+library(tidyr)
+
+mcd01 <- read.csv("monitoringCloudData/monitoringCloudData_0.1.csv")
+mcd05 <- read.csv("monitoringCloudData/monitoringCloudData_0.5.csv")
+mcd1 <- read.csv("monitoringCloudData/monitoringCloudData_1.csv")
+mcdNone <- read.csv("monitoringCloudData/monitoringCloudData_NONE.csv")
+
+
+#mcdNone
+mcdNone$usedMemoryGBMB  <- as.double(gsub("GB", "", mcdNone$usedMemory))*1024 
+mcdNone$usedMemoryKBMB  <- as.double(gsub("KB", "", mcdNone$usedMemory))/1024  
+mcdNone$usedMemoryMBMB  <-as.double(gsub("MB", "", mcdNone$usedMemory))
+
+mcdNone$usedMemoryMB <- paste(mcdNone$usedMemoryGBMB, mcdNone$usedMemoryKBMB,mcdNone$usedMemoryMBMB)
+mcdNone$usedMemoryMB <- as.double(gsub("NA", "", mcdNone$usedMemoryMB))
+mcdNone$usedMemoryGBMB <- NULL
+mcdNone$usedMemoryKBMB <- NULL
+mcdNone$usedMemoryMBMB <- NULL
+
+
+mcdNone <- mcdNone %>%
+     separate(currentTime, c("dia", "hora"), " ")
+
+mcdNone$dia <- as.integer(gsub("[0-9]{4}-[0-9]{2}-", "", mcdNone$dia))
+mcdNone$hora <- as.integer((gsub(":[0-9]{2}:[0-9]{2}.[0-9]{6}", "", mcdNone$hora)))
+
+for (i in 1:length(row(mcdNone))) {
+   if (is.na(mcdNone$dia[i])) {
+    
+   }else{
+       if (mcdNone$dia[i] == 29){
+    mcdNone$hora[i] <- mcdNone$hora[i] +24
+    }
+    if (mcdNone$dia[i] == 30){
+    mcdNone$hora[i] <- mcdNone$hora[i] +48
+    }
+    if (mcdNone$dia[i] == 31){
+    mcdNone$hora[i] <- mcdNone$hora[i] +48
+     }
+    }
+   
+}
+
+
+
+plot(mcdNone$hora,mcdNone$usedMemoryMB, type = "l", main = "Memory Analysis (None Workload)",
+     ylab = "Used Memory (MB)",
+     xlab = "Time (hour)")
+
+
+
+
+#mcd 0.1
+mcd01$usedMemoryGBMB  <- as.double(gsub("GB", "", mcd01$usedMemory))*1024 
+mcd01$usedMemoryKBMB  <- as.double(gsub("KB", "", mcd01$usedMemory))/1024  
+mcd01$usedMemoryMBMB  <-as.double(gsub("MB", "", mcd01$usedMemory))
+
+mcd01$usedMemoryMB <- paste(mcd01$usedMemoryGBMB, mcd01$usedMemoryKBMB,mcd01$usedMemoryMBMB)
+mcd01$usedMemoryMB <- as.double(gsub("NA", "", mcd01$usedMemoryMB))
+mcd01$usedMemoryGBMB <- NULL
+mcd01$usedMemoryKBMB <- NULL
+mcd01$usedMemoryMBMB <- NULL
+
+
+mcd01 <- mcd01 %>%
+     separate(currentTime, c("dia", "hora"), " ")
+
+mcd01$dia <- as.integer(gsub("[0-9]{4}-[0-9]{2}-", "", mcd01$dia))
+mcd01$hora <- as.integer((gsub(":[0-9]{2}:[0-9]{2}.[0-9]{6}", "", mcd01$hora)))
+
+for (i in 1:length(row(mcd01))) {
+   if (is.na(mcd01$dia[i])) {
+    
+   }else{
+       if (mcd01$dia[i] == 29){
+    mcd01$hora[i] <- mcd01$hora[i] +24
+    }
+    if (mcd01$dia[i] == 30){
+    mcd01$hora[i] <- mcd01$hora[i] +48
+    }
+    if (mcd01$dia[i] == 31){
+    mcd01$hora[i] <- mcd01$hora[i] +48
+     }
+    }
+   
+}
+
+
+
+plot(mcd01$hora,mcd01$usedMemoryMB, type = "l", main = "Memory Analysis (Workload of 0.1)",
+     ylab = "Used Memory (MB)",
+     xlab = "Time (hour)")
+
+#mcd0.5
+#mcd 0.1
+mcd05$usedMemoryGBMB  <- as.double(gsub("GB", "", mcd05$usedMemory))*1024 
+mcd05$usedMemoryKBMB  <- as.double(gsub("KB", "", mcd05$usedMemory))/1024  
+mcd05$usedMemoryMBMB  <-as.double(gsub("MB", "", mcd05$usedMemory))
+
+mcd05$usedMemoryMB <- paste(mcd05$usedMemoryGBMB, mcd05$usedMemoryKBMB,mcd05$usedMemoryMBMB)
+mcd05$usedMemoryMB <- as.double(gsub("NA", "", mcd05$usedMemoryMB))
+mcd05$usedMemoryGBMB <- NULL
+mcd05$usedMemoryKBMB <- NULL
+mcd05$usedMemoryMBMB <- NULL
+
+
+mcd05 <- mcd05 %>%
+     separate(currentTime, c("dia", "hora"), " ")
+
+mcd05$dia <- as.integer(gsub("[0-9]{4}-[0-9]{2}-", "", mcd05$dia))
+mcd05$hora <- as.integer((gsub(":[0-9]{2}:[0-9]{2}.[0-9]{6}", "", mcd05$hora)))
+
+for (i in 1:length(row(mcd05))) {
+   if (is.na(mcd05$dia[i])) {
+    
+   }else{
+       if (mcd05$dia[i] == 29){
+    mcd05$hora[i] <- mcd05$hora[i] +24
+    }
+    if (mcd05$dia[i] == 30){
+    mcd05$hora[i] <- mcd05$hora[i] +48
+    }
+    if (mcd05$dia[i] == 31){
+    mcd05$hora[i] <- mcd05$hora[i] +48
+     }
+    }
+   
+}
+
+
+
+plot(mcd05$hora,mcd05$usedMemoryMB, type = "l", main = "Memory Analysis (Workload of 0.5)",
+     ylab = "Used Memory (MB)",
+     xlab = "Time (hour)")
+
+
+#mcd1
+#mcd 0.1
+mcd1$usedMemoryGBMB  <- as.double(gsub("GB", "", mcd1$usedMemory))*1024 
+mcd1$usedMemoryKBMB  <- as.double(gsub("KB", "", mcd1$usedMemory))/1024  
+mcd1$usedMemoryMBMB  <-as.double(gsub("MB", "", mcd1$usedMemory))
+
+mcd1$usedMemoryMB <- paste(mcd1$usedMemoryGBMB, mcd1$usedMemoryKBMB,mcd1$usedMemoryMBMB)
+mcd1$usedMemoryMB <- as.double(gsub("NA", "", mcd1$usedMemoryMB))
+mcd1$usedMemoryGBMB <- NULL
+mcd1$usedMemoryKBMB <- NULL
+mcd1$usedMemoryMBMB <- NULL
+
+
+mcd1 <- mcd1 %>%
+     separate(currentTime, c("dia", "hora"), " ")
+
+mcd1$dia <- as.integer(gsub("[0-9]{4}-[0-9]{2}-", "", mcd1$dia))
+mcd1$hora <- as.integer((gsub(":[0-9]{2}:[0-9]{2}.[0-9]{6}", "", mcd1$hora)))
+
+for (i in 1:length(row(mcd1))) {
+   if (is.na(mcd1$dia[i])) {
+    
+   }else{
+       if (mcd1$dia[i] == 29){
+    mcd1$hora[i] <- mcd1$hora[i] +24
+    }
+    if (mcd1$dia[i] == 30){
+    mcd1$hora[i] <- mcd1$hora[i] +48
+    }
+    if (mcd1$dia[i] == 31){
+    mcd1$hora[i] <- mcd1$hora[i] +48
+     }
+    }
+   
+}
+
+
+
+plot(mcd1$hora,mcd1$usedMemoryMB, type = "l", main = "Memory Analysis (Workload of 1.0)",
+     ylab = "Used Memory (MB)",
+     xlab = "Time (hour)")
+
+
+
+```
+
+
+## Questão 7
+``` {r questao_7}
+#install.packages('plyr')
+library(plotly)
+library(plyr)
+
+netdata <- read.csv("netflix_titles.csv")
+
+
+netdata$country[netdata$country==""] <- NA
+
+netdataPaisesFreq <- count(netdata,'country')
+ 
+netdataPaisesFreq<- netdataPaisesFreq[complete.cases(netdataPaisesFreq$country),]   
+
+#netdataPaisesFreq$country[netdataPaisesFreq$country==""] <- NA
+
+netdataPaisesFreqLimpo <- subset(netdataPaisesFreq, !grepl(',', country))
+
+
+netdataPaisesFreqLimpo <- netdataPaisesFreqLimpo[order(netdataPaisesFreqLimpo$freq, decreasing = T),]
+
+newdata <- na.omit(netdataPaisesFreqLimpo) 
+
+plot_ly(netdataPaisesFreqLimpo[1:10,], labels=~country,
+        values=~freq,
+        type='pie')
+
+```
+
+
+
+
+
+
+## Questão 8
+Considerando os 10 países descritos na questão anterior, utilize o Plotly para obter uma tabela com as colunas "País" e "Total de conteúdos". Para tal tabela, é necessário que o cabeçalho esteja com o fundo da célula cinza e a letra em branco, e que todos os textos das células estejam @centralizados.
+```{r , warning=FALSE}
+
+top10 <- netdataPaisesFreqLimpo[1:10,]
+plot_ly( type='table',
+        collumnwidth= c(50,50),
+        collumnorder= c(0,1),
+        header = list(
+          values =c("País", "Total de conteúdos"),
+          align= c("center","center"),
+          fill = list(color = c("grey", "grey")),
+          line= list(width= 1.5, color = 'black'),font= list(family= "Arial", size= 12, color = c("white"))
+        ),
+        cells =list(
+          values = rbind(top10$country, top10$freq),
+          align= c("center","center"),
+          line= list(width= 1.5, color = 'black'),font= list(family= "Arial", size= 12, color = c("black"))
+        )
+        )
+
+```
+
+
+## Questão 9
+Utilizando o Plotly, obtenha um gráfico de linha com pontos (como na imagem abaixo) contendo a quantidade de conteúdo por década do Netflix, onde o eixo X representa as décadas e o eixo Y a quantidade de conteúdo disponível na plataforma (coluna "release_year"). Use uma linha azul para representar as séries e uma linha amarela representando os filmes. (Obs: considerar como década o período que compreende os anos de XXX0 à XXX9, por exemplo, 2000 à 2009)
+
+``` {r , warning=F}
+
+seriesnetdata <- subset(netdata, grepl('TV Show', type))
+moviesnetdata <- subset(netdata, grepl('Movie', type))
+
+moviesnetdataAno <- count(moviesnetdata,'release_year')
+colnames(moviesnetdataAno)<- c("relase_m","freq_m")
+
+seriesnetdataAno <- count(seriesnetdata,'release_year')
+colnames(seriesnetdataAno)<- c("relase_s","freq_s")
+
+
+fig <- plot_ly(moviesnetdataAno, x=~relase_m, y=~freq_m, mode='lines', name = "Filmes", type = "scatter", line=list(color = "yellow", width = 2))
+
+fig <- fig %>% add_trace(seriesnetdataAno, x=~seriesnetdataAno$relase_s, y=~seriesnetdataAno$freq_s, mode='lines', name = "Séries", line=list(color = "blue", width = 2) )
+
+fig <- fig %>% layout(title="Lançamentos por ano", xaxis = list(title = 'Ano'), yaxis = list(title = 'Número lançamentos'))
+
+fig
+```
+
+
+## Questão 10
+
+Utilizando o Plotly, obtenha um gráfico que representa a quantidade de filmes lançados de um determinado gênero entre os anos de 2000 e 2010. Este gráfico deve ser de barras lado-a-lado (como na imagem abaixo), com cada barra representando a quantidade de filmes dos gêneros "Dramas", "Action & Adventure" e "Comedies" lançados naquele determinado 
+
+``` {r , warning=F}
+
+#moviesnetdata$release_year
+moviesnetdata2000 <- subset(moviesnetdata, release_year>2000 & release_year <2010, select = c(listed_in, release_year))
+
+moviesnetdata2000Drama <- subset(moviesnetdata2000, grepl("Dramas", listed_in))
+moviesnetdata2000Acao <- subset(moviesnetdata2000, grepl("Action & Adventure", listed_in))
+moviesnetdata2000Comedia <- subset(moviesnetdata2000, grepl("Comedies", listed_in))
+
+moviesnetdata2000DramaAno <- count(moviesnetdata2000Drama,'release_year')
+colnames(moviesnetdata2000DramaAno)<- c("relase_d","freq_d")
+
+
+moviesnetdata2000AcaoAno <- count(moviesnetdata2000Acao,'release_year')
+colnames(moviesnetdata2000AcaoAno)<- c("relase_a","freq_a")
+
+moviesnetdata2000ComediaAno <- count(moviesnetdata2000Comedia,'release_year')
+colnames(moviesnetdata2000ComediaAno)<- c("relase_c","freq_c")
+
+fig <- plot_ly(
+  moviesnetdata2000DramaAno,
+  x =~relase_d,
+  y =~freq_d,
+  type = 'bar',
+  name = "Drama"
+)
+
+fig <- fig %>% add_trace(moviesnetdata2000AcaoAno,
+                         x =~moviesnetdata2000AcaoAno$relase_a,
+        y =~moviesnetdata2000AcaoAno$freq_a,
+        type = 'bar',
+        name = "Ação e Aventura"
+  
+)
+fig <- fig %>% add_trace(moviesnetdata2000ComediaAno,
+                         x =~moviesnetdata2000ComediaAno$relase_c,
+        y =~moviesnetdata2000ComediaAno$freq_c,
+        type = 'bar',
+        name = "Comédia"
+  
+)
+
+fig <- fig %>% layout(title="Lançamentos por ano", xaxis = list(title = 'Ano'), yaxis = list(title = 'Número lançamentos'))
+
+fig
+```
