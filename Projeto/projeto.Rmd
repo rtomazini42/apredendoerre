@@ -1,0 +1,67 @@
+---
+title: "Projeto da Disciplina"
+author: "Renan Tomazini"
+date: '2022-09-13'
+output: html_document
+---
+
+# O projeto {.tabset}
+
+Para esse projeto estarei analisando o conjunto de dados de Downloads e avaliações de aplicativos da GooglePlayStore obtidos em Julho de 2022.
+
+## Introdução
+
+O conjunto de dados analisados trata-se de um compilado dos aplicativos mais populares da _GooglePlayStore_, com detalhes sobe sua categoria, preço, número de Downloads, avaliações, número de Reviews, tamanho, gênero e público alvo.
+O objetivo é verificar os aplicativos mais populares de cada categoria, se existe alguma relação entre suas avaliações, seu preço e público alvo. Com esses dados podemos verificar quais aplicativos tem têndencia de serem mais populares e quais despertam maior interesse no público e assim ter uma segurança maior ao desenvolver aplicativos para plataforma, verificando quais são os concorrentes, suas avaliações e quais os serviços mais populares.
+
+## Pacotes Requeridos
+Os pacotes a serem usados são:
+
+### plotly
+Para criação de gráficos.
+
+### stringr
+Para trabalhar com as strings presentes no dataset.
+
+### tidyr
+Para auxiliar na limpeza e organização das tabelas de dados.
+
+``` {r blibiotecas } 
+#include=FALSE
+#pacotes a serem instalados
+library(plotly)
+library(stringr)
+library(tidyr)
+
+```
+
+## Preparação dos dados
+
+### Fonte dos dados
+Os dados foram retirados do agregador [kaggle](https://www.kaggle.com/datasets/adityagupta152002/google-play). A principio eles são apenas um conjunto de dados de dominio público retirados da GooglePlay Store via mineração de texto, com alguns dados corrompidos, não normalizados ou faltando. 
+ O conjunto de dados de Downloads e avaliações de aplicativos da GooglePlayStore foram obtidos em Julho de 2022.
+ 
+### Limpeza de dados
+Aqui farei a limpeza dos dados faltando, não normalizados ou corrompidos.
+
+### Como está o conjunto limpo
+Aqui vai estar um pequeno exemplo dos dados já limpos e normalizados, em até 200 linhas.
+Assim como trechos de categorias obtidas a partir de summary() e str()
+
+## Análise exploratória dos dados
+Aqui serão explorados os dados.
+
+### Categorias mais bem avaliadas
+Aqui serão analisadas as categorias com melhor rating dos usuários e se há diferença entre elas se forem pagas ou não.
+
+### Mais populares por público alvo
+Quais categorias de aplicativo são mais populares por público alvo (idade), se eles são pagos ou não e buscar quais as formas de financiamento dos 10 aplicativos mais populares de cada público alvo.
+
+## Conclusões
+Aqui vão ficar as _conclusões_ quando eu tiver alguma
+
+
+## Formatação e Outros Requisitos
+
+6.1 O estilo adequado de codificação deve ser seguido e o código deve serbem comentado. 6.2 A codificação deve ser sistemática -problemascomplicadosdevem ser divididosem subproblemas que são individualmente muito mais simplesde serem resolvidos. O código deve ser8
+eficiente, correto e mínimo. Ele também precisausarestruturasde dados apropriadas (lista, data frame, vetor, matriz e fatores). 6.3Realização, domínio, esperteza ecriatividade: As ferramentas e técnicas do curso devem seraplicadas de forma competente e, talvez, de alguma forma criativa. 6.4 Ir além do que era esperado e requeridoatravés douso de pacotes, ferramentas e métodos não abordados pelo curso.
