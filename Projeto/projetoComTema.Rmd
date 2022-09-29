@@ -1,19 +1,20 @@
 ---
-title: "Projeto da Disciplina"
+title: "Analisando dados da GooglePlayStore"
 author: "Renan Tomazini"
-date: '2022-09-13'
-#output: html_document
+date: '22 setembro de 2022'
 output:
   prettydoc::html_pretty:
-  theme: leonid
-  highlight: github
+    theme: architect  
+    highlight: github
 ---
-
 # O projeto {.tabset}
 
 Para esse projeto estarei analisando o conjunto de dados de Downloads e avaliações de aplicativos da GooglePlayStore obtidos em Julho de 2022.
 
-## Introdução
+<img src="images/google-play-logo-2.jpg" alt="drawing" style="width:200px; display: block;margin-left: auto;margin-right: auto;"/>
+
+
+# Introdução
 
 O conjunto de dados analisados trata-se de um compilado dos aplicativos mais populares da _GooglePlayStore_, com detalhes sobe sua categoria, preço, número de Downloads, avaliações, número de Reviews, tamanho, gênero e público alvo.
 O objetivo é verificar os aplicativos mais populares de cada categoria, se existe alguma relação entre suas avaliações, seu preço e público alvo. Com esses dados podemos verificar quais aplicativos tem têndencia de serem mais populares e quais despertam maior interesse no público e assim ter uma segurança maior ao desenvolver aplicativos para plataforma, verificando quais são os concorrentes, suas avaliações e quais os serviços mais populares.
@@ -31,16 +32,16 @@ Para trabalhar com as strings presentes no dataset.
 Para auxiliar na limpeza e organização das tabelas de dados.
 
 ### prettydoc
+Personalização do tema para melhor visualização do documento.
 
-
-``` {r blibiotecas } 
-#include=FALSE
-#pacotes a serem instalados
+``` {r blibiotecas, message = FALSE} 
+#pacotes a serem importados
 
 library(prettydoc)
 library(plotly)
 library(stringr)
 library(tidyr)
+library(plyr)
 
 ```
 
@@ -105,6 +106,12 @@ df$Installs[df$Installs == "50+"] <- 50
 df$Installs[df$Installs == "1+"] <- 1
 df$Installs[df$Installs == "5"] <- 5
 
+df$Type[df$Installs == "5"] <- "Paid"
+
+
+df$Reviews <- as.integer(as.character(df$Reviews)) #convertendo o numero de reviews para int afim de usar os dados
+
+#head(df)
 
 
 ```
@@ -112,12 +119,12 @@ df$Installs[df$Installs == "5"] <- 5
 
 
 ### Como está o conjunto limpo
-Aqui vai estar um pequeno exemplo dos dados já limpos e normalizados.
-Assim como trechos de categorias obtidas a partir de summary() e str()
+Os dados limpos e normalizados estão aqui, aqui são uma amostra com o top25 dos melhores avaliados com maior número de reviews.
+
 ``` {r amostra}
 
 #head(df)
-dfOrdenado <-df[order(-df$Rating),]
+dfOrdenado <-df[order(-df$Rating, -df$Reviews),]
 
 top25 <- dfOrdenado[1:25,]
 
@@ -127,25 +134,73 @@ plot_ly( type='table',
         header = list(
           values =c("App", "Rating"),
           align= c("center","center"),
-          fill = list(color = c("grey", "grey")),
-          line= list(width= 1.5, color = 'black'),font= list(family= "Arial", size= 12, color = c("white"))
+          fill = list(color = c("#9ddcff", "#317ccf")),
+          line= list(width= 1.5, color = 'black'),font= list(family= "Helvetica", size= 12, color = c("black"))
         ),
         cells =list(
           values = rbind(top25$App, top25$Rating),
           align= c("center","center"),
-          line= list(width= 1.5, color = 'black'),font= list(family= "Arial", size= 12, color = c("black"))
+          line= list(width= 1.5, color = 'black'),font= list(family= "Helvetica", size= 12, color = c("black"))
         )
-        )
+        )%>% layout(title = "25 Aplicativos melhores avaliados com maior numero de review")
 
 ```
 
 
 
+
 ## Análise exploratória dos dados
-Aqui serão explorados os dados.
+Exploro os dados a partir daqui
 
 ### Categorias mais bem avaliadas
 Aqui serão analisadas as categorias com melhor rating dos usuários e se há diferença entre elas se forem pagas ou não.
+``` {r amostra}
+
+#head(df)
+dfOrdenado <-df[order(-df$Rating, -df$Reviews),]
+
+top1000 <- dfOrdenado[1:1000,]
+top100 <- top1000[1:100,]
+
+ContagemTypeGeral <- count(dfOrdenado,'Type')
+ContagemTypeGeral$perc <- c(top1000ContagemType[,2] / length(dfOrdenado$App)*10)
+colnames(top1000ContagemType)<- c("Type","freq","perc")
+
+
+#dfOrdenado$Type
+top1000ContagemType <- count(top1000,'Type')
+top1000ContagemType$perc <- c(top1000ContagemType[,2] / length(top1000$App))
+colnames(top1000ContagemType)<- c("Type1000","freq1000","perc1000")
+
+top100ContagemType <- count(top100,'Type')
+top100ContagemType$perc <- c(top100ContagemType[,2] / length(top100$App))
+colnames(top100ContagemType)<- c("Type100","freq100","perc100")
+
+
+
+
+
+fig <- plot_ly(ContagemTypeGeral, x = ~Type, y = ~perc, type = 'bar', name = 'Porcentagem geral')
+
+
+
+fig <- fig %>%  add_trace(top1000ContagemType, x = ~top1000ContagemType$Type1000, y = ~top1000ContagemType$perc1000, type = 'bar', name = 'Porcentagem 1000 primeiros')
+
+
+fig <- fig %>% add_trace(top100ContagemType,
+                         x =top100ContagemType$Type100,
+        y = ~top100ContagemType$perc100,
+        type = 'bar',
+        name = "Porcentagem 100 primeiros")
+
+fig <- fig %>% layout(yaxis = list(title = 'Count'), barmode = 'stack')        
+  
+
+
+
+fig
+```
+
 
 ### Mais populares por público alvo
 Quais categorias de aplicativo são mais populares por público alvo (idade), se eles são pagos ou não e buscar quais as formas de financiamento dos 10 aplicativos mais populares de cada público alvo.
