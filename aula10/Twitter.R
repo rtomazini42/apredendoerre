@@ -1,5 +1,5 @@
-#install.packages("twitterR")
-install.packages("rtweet")
+install.packages("twitterR")
+#install.packages("rtweet")
 
 #library(twitteR)
 library(rtweet)
@@ -9,10 +9,10 @@ library(wordcloud)
 
 #chaves de acesso
 
-API_Key <- ""
-API_Key_Secret <- ""
-Access_Token <- ""
-Access_Token_Secret <- ""
+API_Key <- "61TkRahBoehFNx9LDG5bisob1"
+API_Key_Secret <- "5UyzoZRuA3ClGmihjDru1YS14kRgYBo3ShAtlfcRvMimoW0G1M"
+Access_Token <- "153453487-NXsIctctRcQC9HDEAZtfxr1o1K2YcCzwV7JkZqF6"
+Access_Token_Secret <- "XXK40bMtwMFUSMVigye7TjZOorp1k7LhdY5nNob4FgtAj"
 
 token <- create_token(app= "ape_is_not_monkey",
                       
@@ -27,8 +27,9 @@ token <- create_token(app= "ape_is_not_monkey",
 #essa função abre o navegador pra autenticação
 auth_setup_default()
 
+
 #consultando o twitter
-tweets <- search_tweets("Abin", n=500, lang="pt")
+tweets <- search_tweets("Bolsonaro", n=500, lang="pt")
 
 #colapsando todos os twittes em um vetor de uma posição
 tweets_t <- paste(tweets$text, collapse = " ")
@@ -63,6 +64,10 @@ dtm <- as.matrix(dtm)
 fre <- sort(rowSums(dtm), decreasing = TRUE)
 
 
+top20 <- fre[0:20]
+top20<-data.frame(top20)
+top20 <- cbind(palavra = rownames(top20), top20)
+rownames(top20) <- 1:nrow(top20)
 
 
 #Gerar nuvem
@@ -70,3 +75,5 @@ fre <- sort(rowSums(dtm), decreasing = TRUE)
 wordcloud(corpus, min.freq = 3, max.words = 150,
           random.order = FALSE, rot.per = 0.15,
           colors=brewer.pal(8,"Dark2"), scale = c(3,.8))
+
+

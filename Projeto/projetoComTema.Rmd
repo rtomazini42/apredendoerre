@@ -71,11 +71,11 @@ print(paste0("Número de dados completos: ",nrow(df)))
 
 ```
 
-#### Irei retirar dados percebidos como fora do padrão em rating:
+#### Irei retirar dados percebidos como fora do padrão em rating e uma linha problematica com erro:
 ```{r rating}
 df[df$Rating > 5,] <- 5
 df[df$Rating < 0,] <- 0
-
+df <- subset(df, App != "5")
 
 
 ```
@@ -84,7 +84,7 @@ df[df$Rating < 0,] <- 0
 ``` {r numero_instalacao}
 #Verifiquei abaixo as possibilidades antes de substituir
 #unique(df$Installs)
-
+options(scipen=999) # para os numeros não ficarem em notação
 df$Installs[df$Installs == "10,000+"] <- 10000
 df$Installs[df$Installs == "500,000+"] <- 500000
 df$Installs[df$Installs == "5,000,000+"] <- 500000
@@ -105,13 +105,14 @@ df$Installs[df$Installs == "5+"] <- 5
 df$Installs[df$Installs == "50+"] <- 50
 df$Installs[df$Installs == "1+"] <- 1
 df$Installs[df$Installs == "5"] <- 5
+df$Installs <- as.numeric(as.character(df$Installs))
 
-df$Type[df$Installs == "5"] <- "Paid"
+#df$Type[df$Installs == "5"] <- "Paid"
 
 
 df$Reviews <- as.integer(as.character(df$Reviews)) #convertendo o numero de reviews para int afim de usar os dados
 
-#head(df)
+
 
 
 ```
@@ -125,10 +126,12 @@ Os dados limpos e normalizados estão aqui, aqui são uma amostra com o top25 do
 
 #head(df)
 dfOrdenado <-df[order(-df$Rating, -df$Reviews),]
+dfOrdenado <- dfOrdenado[dfOrdenado$Installs> 1000,]  #Tem que ser mais de 1000 downloads para ser considerado
+
 
 top25 <- dfOrdenado[1:25,]
 
-plot_ly( type='table',
+tab <- plot_ly( type='table',
         #collumnwidth= c(50,50),
         #collumnorder= c(0,1),
         header = list(
@@ -143,7 +146,7 @@ plot_ly( type='table',
           line= list(width= 1.5, color = 'black'),font= list(family= "Helvetica", size= 12, color = c("black"))
         )
         )%>% layout(title = "25 Aplicativos melhores avaliados com maior numero de review")
-
+tab
 ```
 
 
@@ -152,10 +155,9 @@ plot_ly( type='table',
 ## Análise exploratória dos dados
 Exploro os dados a partir daqui
 
-### Categorias mais bem avaliadas
-Aqui serão analisadas as categorias com melhor rating dos usuários e se há diferença entre elas se forem pagas ou não.
-``` {r amostra}
-
+### Grátis ou pago
+As porcentagens de grátis ou pago aparentemente mantém uma proporção muito próximas entre os 100 e os 1000 primeiros, além de no geral.
+``` {r barras}
 #head(df)
 dfOrdenado <-df[order(-df$Rating, -df$Reviews),]
 
@@ -163,53 +165,513 @@ top1000 <- dfOrdenado[1:1000,]
 top100 <- top1000[1:100,]
 
 ContagemTypeGeral <- count(dfOrdenado,'Type')
-ContagemTypeGeral$perc <- c(top1000ContagemType[,2] / length(dfOrdenado$App)*10)
-colnames(top1000ContagemType)<- c("Type","freq","perc")
+ContagemTypeGeral$perc <- c(ContagemTypeGeral[,2] / length(dfOrdenado$App))*100
+colnames(ContagemTypeGeral)<- c("Type","freq","perc")
 
 
 #dfOrdenado$Type
 top1000ContagemType <- count(top1000,'Type')
-top1000ContagemType$perc <- c(top1000ContagemType[,2] / length(top1000$App))
+top1000ContagemType$perc <- c(top1000ContagemType[,2] / length(top1000$App))*100
 colnames(top1000ContagemType)<- c("Type1000","freq1000","perc1000")
 
 top100ContagemType <- count(top100,'Type')
-top100ContagemType$perc <- c(top100ContagemType[,2] / length(top100$App))
+top100ContagemType$perc <- c(top100ContagemType[,2] / length(top100$App))*100
 colnames(top100ContagemType)<- c("Type100","freq100","perc100")
 
 
 
 
 
-fig <- plot_ly(ContagemTypeGeral, x = ~Type, y = ~perc, type = 'bar', name = 'Porcentagem geral')
+fig <- plot_ly(ContagemTypeGeral, x = ~Type, y = ~perc, type = 'bar', name = 'Porcentagem geral', color = I("rgba(132, 182, 244, 1)"))
 
 
 
-fig <- fig %>%  add_trace(top1000ContagemType, x = ~top1000ContagemType$Type1000, y = ~top1000ContagemType$perc1000, type = 'bar', name = 'Porcentagem 1000 primeiros')
+fig <- fig %>%  add_trace(top1000ContagemType, x = ~top1000ContagemType$Type1000, y = ~top1000ContagemType$perc1000, type = 'bar', name = 'Porcentagem 1000 primeiros', color = I("rgba(255, 105, 97, 1)"))
 
 
 fig <- fig %>% add_trace(top100ContagemType,
                          x =top100ContagemType$Type100,
         y = ~top100ContagemType$perc100,
         type = 'bar',
-        name = "Porcentagem 100 primeiros")
+        name = "Porcentagem 100 primeiros",
+        color = I("rgba(119, 221, 119, 1)"))
 
-fig <- fig %>% layout(yaxis = list(title = 'Count'), barmode = 'stack')        
+fig <- fig %>% layout(yaxis = list(title = 'Count'), barmode='group')        
   
-
+fig <- fig %>% layout(title = 'Porcentagem de Pagos e gratuitos entre os mais populates')
 
 
 fig
 ```
 
+```{r tabela, echo = FALSE}
+tab1 <- plot_ly( type='table',
+        header = list(
+          
+          values =c("Tipo", "porcentagem"),
+          align= c("center","center"),
+          fill = list(color = c("rgba(255, 105, 97, 1)", "rgba(119, 221, 119, 1)")),
+          line= list(width= 1.5, color = 'black'),font= list(family= "Helvetica", size= 12, color = c("black"))
+        ),
+        cells =list(
+          values = rbind(ContagemTypeGeral$Type, paste0(format(round(ContagemTypeGeral$perc, 2), nsmall = 2),"%")),
+          align= c("center","center"),
+          line= list(width= 1.5, color = 'black'),font= list(family= "Helvetica", size= 12, color = c("black"))
+        )
+        )%>% layout(title = 'Porcentagem de Pagos e gratuitos geral')
+
+fig1 <- plot_ly(ContagemTypeGeral, x = ~Type, y = ~perc, type = 'bar', name = 'Porcentagem geral', color = I("rgba(119, 221, 119, 1)"))
+fig1 <- fig1 %>% layout(title = 'Porcentagem de Pagos e gratuitos entre os mais populates',
+
+         xaxis = list(title = "Tipo"),
+
+         yaxis = list(title = "Porcentagem"))
+
+
+tab2 <- plot_ly( type='table',
+        header = list(
+          
+          values =c("Tipo", "porcentagem"),
+          align= c("center","center"),
+          fill = list(color = c("rgba(255, 105, 97, 1)", "rgba(119, 221, 119, 1)")),
+          line= list(width= 1.5, color = 'black'),font= list(family= "Helvetica", size= 12, color = c("black"))
+        ),
+        cells =list(
+          values = rbind(top1000ContagemType$Type, paste0(format(round(top1000ContagemType$perc, 2), nsmall = 2),"%")),
+          align= c("center","center"),
+          line= list(width= 1.5, color = 'black'),font= list(family= "Helvetica", size= 12, color = c("black"))
+        )
+        )%>% layout(title = 'Porcentagem de Pagos e gratuitos top 1000')
+
+fig2 <- plot_ly(top1000ContagemType, x = ~top1000ContagemType$Type1000, y = ~top1000ContagemType$perc1000, type = 'bar', name = 'Porcentagem 1000 primeiros', color = I("rgba(255, 105, 97, 1)"))
+
+fig2 <- fig2 %>% layout(title = 'Porcentagem 1000 primeiros',
+
+         xaxis = list(title = "Tipo"),
+
+         yaxis = list(title = "Porcentagem"))
+
+
+tab3 <- plot_ly( type='table',
+        header = list(
+          
+          values =c("Tipo", "porcentagem"),
+          align= c("center","center"),
+          fill = list(color = c("rgba(255, 105, 97, 1)", "rgba(119, 221, 119, 1)")),
+          line= list(width= 1.5, color = 'black'),font= list(family= "Helvetica", size= 12, color = c("black"),height = 2)
+        ),
+        cells =list(
+          values = rbind(top100ContagemType$Type, paste0(format(round(top100ContagemType$perc, 2), nsmall = 2),"%")),
+          align= c("center","center"),
+          line= list(width= 1.5, color = 'black'),font= list(family= "Helvetica", size= 12, color = c("black"), height = 2)
+        )
+        )%>% layout(title = 'Porcentagem de Pagos e gratuitos top 100')
+
+fig3 <- plot_ly(top1000ContagemType, x = ~top1000ContagemType$Type1000, y = ~top1000ContagemType$perc1000, type = 'bar', name = 'Porcentagem 100 primeiros', color = I("rgba(119, 221, 119, 1)"))
+fig3 <- fig3 %>% layout(title = 'Porcentagem 100 primeiros',
+
+         xaxis = list(title = "Tipo"),
+
+         yaxis = list(title = "Porcentagem"))
+
+tab1
+fig1
+tab2
+fig2
+tab3
+fig3
+
+
+
+
+```
+
+
+
+### Categorias mais bem avaliadas
+Aqui serão analisadas as categorias com melhor rating dos usuários e se há diferença entre elas se forem pagas ou não.
+```{r}
+
+
+dfRating <- aggregate(df$Rating, by=list(Category=df$Category), FUN=mean)
+colnames(dfRating) <-  c("Category", "Rating")
+dfRating$Rating <- format(round(dfRating$Rating, 2), nsmall = 2)
+
+fig <- plot_ly(dfRating, x = ~Category, y = ~Rating, type = 'bar', name = 'Categorias Mais populares',color = I("rgba(119, 221, 119, 1)")) %>% 
+layout(xaxis = list(categoryorder = "total descending"))
+
+tab <- plot_ly(
+
+  type = 'table',
+  columnwidth = c(100, 100),
+
+  columnorder = c(0, 1),
+
+  header = list(
+
+    values = c("Categoria","Instalações"),
+
+    align = c("center", "center"),
+
+    line = list(width = 1, color = 'black'),
+
+    fill = list(color = c("rgba(255, 105, 97, 1)", "rgba(119, 221, 119, 1)")),
+
+    font = list(family = "Arial", size = 14, color = "white")
+
+  ),
+
+  cells = list(
+    
+    values = rbind(dfRating$Category, dfRating$Rating),
+
+    align = c("center", "center"),
+
+    line = list(color = "black", width = 1),
+
+    font = list(family = "Arial", size = 12, color = c("black"))
+
+  ))
+
+
+
+
+
+
+fig
+tab
+
+```
+A categoria de eventos é a mais bem avaliada, a pior avaliada é a Dating, aplicativos de relacionamento.
+
+### Categorias mais populares
+O gráfico a seguir mostra quais são as categorias mais baixadas
+```{r}
+
+dfIntalacoes <- aggregate(df$Installs, by=list(Category=df$Category), FUN=sum)
+colnames(dfIntalacoes) <- c("Category", "Installs")
+
+fig <- plot_ly(dfIntalacoes, x = ~Category, y = ~Installs, type = 'bar', name = 'Categorias Mais populares',color = I("rgba(119, 221, 119, 1)")) %>% 
+layout(xaxis = list(categoryorder = "total descending"))
+
+tab <- plot_ly(
+
+  type = 'table',
+  columnwidth = c(100, 100),
+
+  columnorder = c(0, 1),
+
+  header = list(
+
+    values = c("Categoria","Instalações"),
+
+    align = c("center", "center"),
+
+    line = list(width = 1, color = 'black'),
+
+    fill = list(color = c("rgba(255, 105, 97, 1)", "rgba(119, 221, 119, 1)")),
+
+    font = list(family = "Arial", size = 14, color = "white")
+
+  ),
+
+  cells = list(
+    
+    values = rbind(dfIntalacoes$Category, dfIntalacoes$Installs),
+
+    align = c("center", "center"),
+
+    line = list(color = "black", width = 1),
+
+    font = list(family = "Arial", size = 12, color = c("black"))
+
+  ))
+
+
+
+
+fig
+tab
+
+```
+Comunicação e games são os com maior número de Downloads, enquanto o Eventos e Beleza são os com menores.
+
+
+### Numero de Downloads por púbico alvo
+
+
+```{r}
+
+
+dfIntalacoes <- aggregate(df$Installs, by=list(Publico=df$Content.Rating), FUN=sum)
+colnames(dfIntalacoes) <- c("Publico", "Installs")
+
+fig <- plot_ly(dfIntalacoes, x = ~Publico, y = ~Installs, type = 'bar', name = 'Categorias Mais populares',color = I("rgba(119, 221, 119, 1)")) %>% 
+layout(xaxis = list(categoryorder = "total descending"))
+
+tab <- plot_ly(
+
+  type = 'table',
+  columnwidth = c(100, 100),
+
+  columnorder = c(0, 1),
+
+  header = list(
+
+    values = c("Categoria","Instalações"),
+
+    align = c("center", "center"),
+
+    line = list(width = 1, color = 'black'),
+
+    fill = list(color = c("rgba(255, 105, 97, 1)", "rgba(119, 221, 119, 1)")),
+
+    font = list(family = "Arial", size = 14, color = "white")
+
+  ),
+
+  cells = list(
+    
+    values = rbind(dfIntalacoes$Publico, dfIntalacoes$Installs),
+
+    align = c("center", "center"),
+
+    line = list(color = "black", width = 1),
+
+    font = list(family = "Arial", size = 12, color = c("black"))
+
+  ))
+
+
+
+
+fig
+tab
+
+```
+Os que tem publico alvo para todos são os com maior número de downloads.
+
+
 
 ### Mais populares por público alvo
 Quais categorias de aplicativo são mais populares por público alvo (idade), se eles são pagos ou não e buscar quais as formas de financiamento dos 10 aplicativos mais populares de cada público alvo.
+```{r}
+
+
+dfPublico <- aggregate(df$Rating, by=list(Publico=df$Content.Rating), FUN=mean)
+colnames(dfPublico) <- c("Publico", "Rating")
+
+
+
+fig1 <- plot_ly(dfPublico, x = ~Publico, y = ~Rating, type = 'bar', name = ' Mais populares por Publico',color = I("rgba(119, 221, 119, 1)")) %>%   layout(xaxis = list(categoryorder = "total descending")) 
+
+
+tab <- plot_ly(
+
+  type = 'table',
+  columnwidth = c(100, 100),
+
+  columnorder = c(0, 1),
+
+  header = list(
+
+    values = c("Publico","Rating"),
+
+    align = c("center", "center"),
+
+    line = list(width = 1, color = 'black'),
+
+    fill = list(color = c("rgba(255, 105, 97, 1)", "rgba(119, 221, 119, 1)")),
+
+    font = list(family = "Arial", size = 14, color = "white")
+
+  ),
+
+  cells = list(
+    
+    values = rbind(dfPublico$Publico, dfPublico$Rating),
+
+    align = c("center", "center"),
+
+    line = list(color = "black", width = 1),
+
+    font = list(family = "Arial", size = 12, color = c("black"))
+
+  ))
+
+
+
+
+fig1
+tab
+
+```
+Jogos para +18 são os com melhores avaliações.
+
+
+## Comparações aplicativos
+Agora, a partir dos dados da GooglePlayStore atuais, de 30/09/2022, irei comparar público e rating de aplicativos semelhantes.
+
+### Comparando mensageiros instantâneos
+Nessa etapa estarei comparando os mensageiros Whatsapp, Telegram, Signal e Menssager
+```{r}
+
+
+aplicativos <- read.csv("aplicativos.csv")
+mensageiros <- aplicativos[1:4,]
+
+fig1 <- plot_ly(mensageiros, x = ~Rating, y = ~Aplicativo, type = 'bar', name = 'Mensageiros populares com maior avaliação',color = I("rgba(119, 221, 119, 1)")) %>%   layout(yaxis = list(categoryorder = "total descending")) %>% layout(title = "Mensageiros populares com maior avaliação")
+                                                                                                                                                                             
+
+fig1
+
+```
+```{r}
+
+
+aplicativos <- read.csv("aplicativos.csv")
+mensageiros <- aplicativos[1:4,]
+
+fig1 <- plot_ly(mensageiros, x = ~Instalacoes, y = ~Aplicativo, type = 'bar', name = 'Mensageiros populares com maior número de Downloads',color = I("rgba(119, 221, 119, 1)")) %>%   layout(yaxis = list(categoryorder = "total descending")) %>% layout(title = "Mensageiros populares com maior número de Downloads")
+                                                                                                                                                                             
+
+fig1
+
+```
+Apesar de menos popular, o Signal é o que apresenta a melhor avaliação, seguida do Telegram. WhatsApp e Messenger, ambos da Meta. são os mais populares, com 5x o número do Telegram, porém tem as piores avaliações.
+Em Categorias mais bem avaliadas descobrimos que a média para aplicativos de comunicação é 4.16, nesse caso apenas o Menssenger ficaria abaixo da média.
+
+
+### Comparando redes de video e imagem
+Nessa etapa estarei comparando as redes de video e imagem, Tik Tok, instagram e SnapChat
+```{r}
+
+
+Videos <- aplicativos[5:7,]
+
+fig1 <- plot_ly(Videos, x = ~Rating, y = ~Aplicativo, type = 'bar', name = 'Redes de video e imagem  com maior avaliação',color = I("rgba(119, 221, 119, 1)")) %>%   layout(yaxis = list(categoryorder = "total descending")) %>% layout(title = "Redes de video e imagem populares com maior avaliação")
+                                                                                                                                                                             
+
+fig1
+
+```
+
+```{r}
+
+
+fig1 <- plot_ly(Videos, x = ~Instalacoes, y = ~Aplicativo, type = 'bar', name = 'Redes de video e imagem com maior número de Downloads',color = I("rgba(119, 221, 119, 1)")) %>%   layout(yaxis = list(categoryorder = "total descending")) %>% layout(title = "Redes de video e imagem com maior número de Downloads")
+                                                                                                                                                                             
+
+fig1
+
+```
+As 3 redes mais populares de Imagem tem praticamente o mesmo número de instalações segundo a Google, porém a mais bem avaliada é a Tik Tok com 4.4.
+Em Categorias mais bem avaliadas descobrimos que a média para aplicativos de vídeo é 4.06, nesse caso apenas o Tik Tok fica acima da média.
+
+
+### Comparando redes de video e imagem
+Nessa etapa estarei comparando os players da categoria Entretenimento mais populares, o Youtube, Netflix e Amazon Prime.
+```{r}
+
+
+Entretenimento <- aplicativos[9:11,]
+
+fig1 <- plot_ly(Entretenimento, x = ~Rating, y = ~Aplicativo, type = 'bar', name = 'App de entretenimento  com maior avaliação',color = I("rgba(119, 221, 119, 1)")) %>%   layout(yaxis = list(categoryorder = "total descending")) %>% layout(title = "App de entretenimento populares com maior avaliação")
+                                                                                                                                                                             
+
+fig1
+
+```
+
+```{r}
+
+
+fig1 <- plot_ly(Entretenimento, x = ~Instalacoes, y = ~Aplicativo, type = 'bar', name = 'App de entretenimento com maior número de Downloads',color = I("rgba(119, 221, 119, 1)")) %>%   layout(yaxis = list(categoryorder = "total descending")) %>% layout(title = "App de entretenimento com maior número de Downloads")
+                                                                                                                                                                             
+
+fig1
+
+```
+Há uma diferença muito grande entre os principais players no Número de Downloads, nesse caso especifico a média de avaliação é 4.13, todos os players selecionados estão acima da média. 
+
+### Games de maior popularidade
+
+```{r}
+
+#games <- df$Category == "GAME"
+#gamesListas <- df[games]
+games <- df[]
+
+games <- df[df$Category == "GAME",]
+games <- games[games$Installs> 100,] #Tem que ser mais de 100 downloads para ser considerado
+
+games <- games %>% distinct(App,Rating,Installs) #para tirar as diversas versões diferentes
+
+gamesOrdenado <-games[order(-games$Installs, -games$Rating),]
+
+gameTop30 <- gamesOrdenado[0:30,]
+
+tab <- plot_ly( type='table',
+        #collumnwidth= c(50,50),
+        #collumnorder= c(0,1),
+        header = list(
+          values =c("App", "Número de Downloads"),
+          align= c("center","center"),
+          fill = list(color = c("#9ddcff", "#317ccf")),
+          line= list(width= 1.5, color = 'black'),font= list(family= "Helvetica", size= 12, color = c("black"))
+        ),
+        cells =list(
+          values = rbind(gameTop30$App, gameTop30$Installs),
+          align= c("center","center"),
+          line= list(width= 1.5, color = 'black'),font= list(family= "Helvetica", size= 12, color = c("black"))
+        )
+        )%>% layout(title = "30 Aplicativos mais populares")
+tab
+
+
+```
+
+### Games de maior Rating
+
+```{r}
+
+#games <- df$Category == "GAME"
+#gamesListas <- df[games]
+games <- df[]
+
+games <- df[df$Category == "GAME",]
+games <- games[games$Installs> 100,]  #Tem que ser mais de 100 downloads para ser considerado
+
+games <- games %>% distinct(App,Rating,Installs) #para tirar as diversas versões diferentes
+
+gamesOrdenado <-games[order(-games$Rating, -games$Installs),]
+
+gameTop30 <- gamesOrdenado[0:30,]
+
+tab <- plot_ly( type='table',
+        #collumnwidth= c(50,50),
+        #collumnorder= c(0,1),
+        header = list(
+          values =c("App", "Rating"),
+          align= c("center","center"),
+          fill = list(color = c("#9ddcff", "#317ccf")),
+          line= list(width= 1.5, color = 'black'),font= list(family= "Helvetica", size= 12, color = c("black"))
+        ),
+        cells =list(
+          values = rbind(gameTop30$App, gameTop30$Rating),
+          align= c("center","center"),
+          line= list(width= 1.5, color = 'black'),font= list(family= "Helvetica", size= 12, color = c("black"))
+        )
+        )%>% layout(title = "30 games mais bem avaliados")
+tab
+
+
+```
+No caso dos games, os mais bem avaliados são totalmente diferente dos mais populares. Não havendo relação entre as avaliações e o número de Downloads.
+
 
 ## Conclusões
-Aqui vão ficar as _conclusões_ quando eu tiver alguma
+Os Aplicativos mais populares nem sempre são os melhores avaliados. Em questão de popularidade para seu aplicativo viralizar a melhor estratégia é criar algo da categoria Social, Game ou Produtividade. A têndencia de se tornar algo padrão no mercado é mais importante do que ter boas reviews.
 
 
-## Formatação e Outros Requisitos
 
-6.1 O estilo adequado de codificação deve ser seguido e o código deve serbem comentado. 6.2 A codificação deve ser sistemática -problemascomplicadosdevem ser divididosem subproblemas que são individualmente muito mais simplesde serem resolvidos. O código deve ser8
-eficiente, correto e mínimo. Ele também precisausarestruturasde dados apropriadas (lista, data frame, vetor, matriz e fatores). 6.3Realização, domínio, esperteza ecriatividade: As ferramentas e técnicas do curso devem seraplicadas de forma competente e, talvez, de alguma forma criativa. 6.4 Ir além do que era esperado e requeridoatravés douso de pacotes, ferramentas e métodos não abordados pelo curso.

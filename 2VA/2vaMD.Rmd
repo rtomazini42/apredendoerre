@@ -1,0 +1,171 @@
+---
+title: "2VA_apresentacao"
+author: "Renan Tomazini"
+date: '2022-09-30'
+output: html_document
+theme: united
+---
+
+
+# Questões {.tabset}
+
+
+```{r, include=FALSE}
+library(plotly)
+library(stringr)
+library(tidyr)
+library(plyr)
+library(rtweet)
+library(wordcloud)
+
+#auth_setup_default()#essa função abre o navegador pra autenticação
+library(syuzhet)
+library(DT) #nem sei pq
+
+```
+
+
+## VADeaths
+Questão 1
+Visualize o dataset VADeaths (já incluído no R) e crie um gráfico de barras empilhadas desses dados, de modo que as barras estejam agrupadas (lado a lado) para cada categoria. Também defina uma cor diferente para cada grupo das categorias. Por fim, adicione título, legenda e nomes nos eixos. Abaixo submeta o link do RPubs com o resultado dessa questão. Ela deve ficar dentro de uma aba chamada de "VADeaths".
+
+```{r , warning=FALSE}
+df <- data.frame(VADeaths)
+
+
+fig <- plot_ly(df, x = ~row.names(df), y = ~Rural.Male, type = 'bar', name = 'Rural Male', color = I("#ff71ce"))
+
+fig <- fig %>% add_trace(y = ~Rural.Female, name = 'Rural Female',color = I("#05ffa1"))
+fig <- fig %>% add_trace(y = ~Urban.Male, name = 'Urban Male',color = I("#b967ff"))
+fig <- fig %>% add_trace(y = ~Urban.Female, name = 'Urban Female',color = I("#ab855d"))
+fig <- fig %>% layout(yaxis = list(title = 'Numero de mortes'))
+fig <- fig %>% layout(xaxis = list(title = 'Faixa etaria'), barmode = 'group')
+#fig <- fig %>% layout(xaxis = list(title = 'Faixa etaria'), barmode = 'stack') 
+# Ficaria muito melhor no modo stack hein!
+
+fig
+```
+
+## ClassificaçãoDoença
+Uma doença pode ser classificada em três estágios (leve, moderado e severo). Foram examinados 20 pacientes e obtidos os dados: moderado, leve, leve, severo, leve, moderado, moderado, moderado, leve, leve, severo,leve, moderado, moderado, leve, severo, moderado, moderado, moderado,leve. Com base nestes dados crie um gráfico de piza.  Inclua a porcentagem de cada fatia, as cores das fatias e o nome do gráfico. Adicionalmente, use o comando legend() para incluir a legenda do gráfico. Abaixo submeta o link do RPubs com o resultado dessa questão. Ela deve ficar dentro de uma aba chamada de "ClassificaçãoDoença". Note que apenas um link do RPubs é necessário. Basta repetir o link abaixo se você já tiver submetido para outras questões.
+
+```{r}
+
+
+colors <- c('#e8e94a', '#7f5ab6','#231c30' )
+            
+classificacao<-c('moderado', 'leve', 'leve', 'severo', 'leve', 'moderado', 'moderado', 'moderado', 'leve', 'leve', 'severo','leve', 'moderado', 'moderado', 'leve', 'severo', 'moderado', 'moderado', 'moderado','leve')
+
+freq <- count(classificacao)
+
+
+labels = freq$x
+
+values = freq$freq
+
+
+fig <- plot_ly(type='pie', labels=labels, values=values, 
+
+               textinfo='label+percent',
+
+               insidetextorientation='radial',
+                marker = list(colors = colors,
+
+                line = list(color = '#FFFFFF', width = 1)),
+              
+               )
+
+
+fig <- fig %>% layout(title = 'Peste') #o Sr não especificou o nome
+
+#legend não funciona com meu Plotly :) mas coloquei um layout Title, quase a mesma coisa
+
+fig
+
+```
+
+
+## Twitters
+Crie uma nuvem de palavra a partir dos twitters sobre a hashtag "#Eleições2022". Também faça uma análise de sentimentos com relação a esses twitters coletados. Abaixo submeta o link do R Markdown com o resultado dessa questão. Ela deve ficar dentro de uma aba chamada de "Twitters".  Note que apenas um link do RPubs é necessário. Basta repetir o link abaixo se você já tiver submetido para outras questões.
+
+```{r, warning=FALSE}
+tweets <- search_tweets("#Eleições2022", n=500, lang="pt")
+
+
+#pontuando os tweets
+tweetsSent <- tweets$text
+s<-get_nrc_sentiment(tweetsSent)
+
+
+
+#plotando grafico com sentimentos
+
+barplot(colSums(s), las=2, col=rainbow(10),
+        ylab = "Contagem", main = "Sentimentos em relação a #eleição2022") #pra que complicar?
+
+
+tweets_texto <-paste(tweets$text, collapse = " ")
+
+wordcloud(width=800, height=800,
+  tweets_texto, min.freq = 1, max.words = 100,
+          random.order = FALSE, rot.per = 0.35,
+          colors=brewer.pal(50,"Dark2")) 
+
+
+
+```
+
+
+
+## flu
+Nesta questão, demonstre o uso do teorema do limite central, usando o conjunto de dados "flu" que é altamente não normal. Esse dataset contém as frequências das idades das mortes durante a epidemia de gripe espanhola na Suíça em 1918. Considere a idade das mortes como a população. Execute os passos a seguir. 
+(1)Mostre o histograma e a curva de densidade do conjunto de dados "flu". 
+(2) Crie 200 médias de amostras da população com tamanho n = 35. 
+(3) Mostre o histograma com a curva de densidade para a médias das amostras. 
+(4) Submeta o link do RPubs com o resultado das etapas anteriores . Essa questão deve ficar dentro de uma aba chamada de "Teorema". Note que apenas um link do RPubs é necessário. Basta repetir o link abaixo se você já tiver submetido para outras questões.
+
+```{r}
+dados <- read.csv("flu.csv")
+
+
+
+hist(dados$age, 
+ col="red", 
+ border="black",
+ prob = TRUE,
+ xlab = "idade",
+ main = "Histograma 1")
+lines(density(dados$age), 
+ lwd = 2, 
+ col = "blue")
+
+
+lst <- list(NA,200)
+for (i in 1:200) {
+  dadoNovo <- mean(sample(dados$age,35, replace = TRUE))
+  lst[i] <- dadoNovo
+}
+
+
+medias <- data.frame(rbind(lst))
+medias <- as.data.frame(t(medias))
+
+
+medias <- as.numeric(unlist(medias))
+
+hist(medias, 
+ col="red", 
+ border="black",
+ prob = TRUE,
+ xlab = "idade",
+ main = "Histograma 2")
+lines(density(medias), 
+ lwd = 2, 
+ col = "blue")
+
+
+#sample(dados$age,35, replace = TRUE)
+
+```
+
+
