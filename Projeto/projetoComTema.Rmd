@@ -6,6 +6,7 @@ output:
   prettydoc::html_pretty:
     theme: architect  
     highlight: github
+bibliography: bib.bib
 ---
 # O projeto {.tabset}
 
@@ -33,6 +34,9 @@ Para auxiliar na limpeza e organização das tabelas de dados.
 
 ### prettydoc
 Personalização do tema para melhor visualização do documento.
+
+### plyr
+Para controle do HTML da página
 
 ``` {r blibiotecas, message = FALSE} 
 #pacotes a serem importados
@@ -63,9 +67,7 @@ Aqui farei a limpeza dos dados faltando, não normalizados ou corrompidos.
 
 #### Irei ignorar os casos não completos primeiramente
 ```{r limpeza_casos_incompletos}
-#is.na(dados$Rating)
 df <- dados[complete.cases(dados), ]
-#head(df)
 
 print(paste0("Número de dados completos: ",nrow(df)))
 
@@ -107,7 +109,6 @@ df$Installs[df$Installs == "1+"] <- 1
 df$Installs[df$Installs == "5"] <- 5
 df$Installs <- as.numeric(as.character(df$Installs))
 
-#df$Type[df$Installs == "5"] <- "Paid"
 
 
 df$Reviews <- as.integer(as.character(df$Reviews)) #convertendo o numero de reviews para int afim de usar os dados
@@ -124,7 +125,6 @@ Os dados limpos e normalizados estão aqui, aqui são uma amostra com o top25 do
 
 ``` {r amostra}
 
-#head(df)
 dfOrdenado <-df[order(-df$Rating, -df$Reviews),]
 dfOrdenado <- dfOrdenado[dfOrdenado$Installs> 1000,]  #Tem que ser mais de 1000 downloads para ser considerado
 
@@ -147,6 +147,21 @@ tab <- plot_ly( type='table',
         )
         )%>% layout(title = "25 Aplicativos melhores avaliados com maior numero de review")
 tab
+
+dfOrdenadoPopularidade <-df[order(-df$Installs, -df$Rating),]
+dfOrdenadoPopularidade <- dfOrdenadoPopularidade[dfOrdenadoPopularidade$Installs> 1000,]  #Tem que ser mais de 1000 downloads para ser considerado
+
+
+top500pop <- dfOrdenadoPopularidade[1:500,]
+
+
+fig2 <- plot_ly(
+
+  type='histogram',
+
+    x=~ top500pop$Rating , marker = list(color='orange') )  %>% layout(title = "Distribuição das notas dos 500 apps mais populares") 
+
+fig2
 ```
 
 
@@ -202,6 +217,8 @@ fig <- fig %>% layout(title = 'Porcentagem de Pagos e gratuitos entre os mais po
 
 
 fig
+
+
 ```
 
 ```{r tabela, echo = FALSE}
@@ -267,7 +284,7 @@ tab3 <- plot_ly( type='table',
         )
         )%>% layout(title = 'Porcentagem de Pagos e gratuitos top 100')
 
-fig3 <- plot_ly(top1000ContagemType, x = ~top1000ContagemType$Type1000, y = ~top1000ContagemType$perc1000, type = 'bar', name = 'Porcentagem 100 primeiros', color = I("rgba(119, 221, 119, 1)"))
+fig3 <- plot_ly(top100ContagemType, x = ~top100ContagemType$Type100, y = ~top100ContagemType$perc100, type = 'bar', name = 'Porcentagem 100 primeiros', color = I("rgba(119, 221, 119, 1)"))
 fig3 <- fig3 %>% layout(title = 'Porcentagem 100 primeiros',
 
          xaxis = list(title = "Tipo"),
@@ -289,7 +306,7 @@ fig3
 
 
 ### Categorias mais bem avaliadas
-Aqui serão analisadas as categorias com melhor rating dos usuários e se há diferença entre elas se forem pagas ou não.
+Aqui serão analisadas as categorias com melhor rating dos usuários e as mais populares
 ```{r}
 
 
@@ -297,7 +314,9 @@ dfRating <- aggregate(df$Rating, by=list(Category=df$Category), FUN=mean)
 colnames(dfRating) <-  c("Category", "Rating")
 dfRating$Rating <- format(round(dfRating$Rating, 2), nsmall = 2)
 
-fig <- plot_ly(dfRating, x = ~Category, y = ~Rating, type = 'bar', name = 'Categorias Mais populares',color = I("rgba(119, 221, 119, 1)")) %>% 
+colors = c('#1B998B', '#ED217C','#2D3047', '#FFFD82' ,'#FF9B71','#53DD6C','#63A088','#56638A','#483A58','#56203D','#FB5012','#01FDF6','#CBBAED','#E9DF00','#03FCBA','#4464AD','#A4B0F5','#F58F29','#7D4600','#466995','#FFA69E','#B8F2E6','#FAF3DD','#AED9E0','#5E6472','#255F85','#C5283D','#FFC857','#E9724C','#D84A05','#E89005','#212738','#57C4E5')
+
+fig <- plot_ly(dfRating, x = ~Category, y = ~Rating, type = 'bar', name = 'Categorias Mais populares',marker = list(color = colors)) %>% 
 layout(xaxis = list(categoryorder = "total descending"))
 
 tab <- plot_ly(
@@ -351,7 +370,7 @@ O gráfico a seguir mostra quais são as categorias mais baixadas
 dfIntalacoes <- aggregate(df$Installs, by=list(Category=df$Category), FUN=sum)
 colnames(dfIntalacoes) <- c("Category", "Installs")
 
-fig <- plot_ly(dfIntalacoes, x = ~Category, y = ~Installs, type = 'bar', name = 'Categorias Mais populares',color = I("rgba(119, 221, 119, 1)")) %>% 
+fig <- plot_ly(dfIntalacoes, x = ~Category, y = ~Installs, type = 'bar', name = 'Categorias Mais populares',marker = list(color = colors)) %>% 
 layout(xaxis = list(categoryorder = "total descending"))
 
 tab <- plot_ly(
@@ -406,7 +425,7 @@ Comunicação e games são os com maior número de Downloads, enquanto o Eventos
 dfIntalacoes <- aggregate(df$Installs, by=list(Publico=df$Content.Rating), FUN=sum)
 colnames(dfIntalacoes) <- c("Publico", "Installs")
 
-fig <- plot_ly(dfIntalacoes, x = ~Publico, y = ~Installs, type = 'bar', name = 'Categorias Mais populares',color = I("rgba(119, 221, 119, 1)")) %>% 
+fig <- plot_ly(dfIntalacoes, x = ~Publico, y = ~Installs, type = 'bar', name = 'Categorias Mais populares',marker = list(color = c('red','lightgreen', 'blue','brown','green','pink'))) %>% 
 layout(xaxis = list(categoryorder = "total descending"))
 
 tab <- plot_ly(
@@ -453,8 +472,8 @@ Os que tem publico alvo para todos são os com maior número de downloads.
 
 
 
-### Mais populares por público alvo
-Quais categorias de aplicativo são mais populares por público alvo (idade), se eles são pagos ou não e buscar quais as formas de financiamento dos 10 aplicativos mais populares de cada público alvo.
+### Mais bem avaliados por público alvo
+Qual a média de avaliação dos aplicativos por público alvo (idade).
 ```{r}
 
 
@@ -463,7 +482,7 @@ colnames(dfPublico) <- c("Publico", "Rating")
 
 
 
-fig1 <- plot_ly(dfPublico, x = ~Publico, y = ~Rating, type = 'bar', name = ' Mais populares por Publico',color = I("rgba(119, 221, 119, 1)")) %>%   layout(xaxis = list(categoryorder = "total descending")) 
+fig1 <- plot_ly(dfPublico, x = ~Publico, y = ~Rating, type = 'bar', name = ' Mais populares por Publico',marker = list(color = c('red','lightgreen', 'blue','brown','green','pink'))) %>%   layout(xaxis = list(categoryorder = "total descending")) 
 
 
 tab <- plot_ly(
@@ -480,6 +499,7 @@ tab <- plot_ly(
     align = c("center", "center"),
 
     line = list(width = 1, color = 'black'),
+    
 
     fill = list(color = c("rgba(255, 105, 97, 1)", "rgba(119, 221, 119, 1)")),
 
@@ -510,7 +530,7 @@ Jogos para +18 são os com melhores avaliações.
 
 
 ## Comparações aplicativos
-Agora, a partir dos dados da GooglePlayStore atuais, de 30/09/2022, irei comparar público e rating de aplicativos semelhantes.
+Agora, a partir dos dados da GooglePlayStore atuais, de 30/09/2022, irei comparar público e rating de aplicativos semelhantes. As cores dos grágicos são de acordo com as cores das marcas,
 
 ### Comparando mensageiros instantâneos
 Nessa etapa estarei comparando os mensageiros Whatsapp, Telegram, Signal e Menssager
@@ -520,7 +540,9 @@ Nessa etapa estarei comparando os mensageiros Whatsapp, Telegram, Signal e Menss
 aplicativos <- read.csv("aplicativos.csv")
 mensageiros <- aplicativos[1:4,]
 
-fig1 <- plot_ly(mensageiros, x = ~Rating, y = ~Aplicativo, type = 'bar', name = 'Mensageiros populares com maior avaliação',color = I("rgba(119, 221, 119, 1)")) %>%   layout(yaxis = list(categoryorder = "total descending")) %>% layout(title = "Mensageiros populares com maior avaliação")
+fig1 <- plot_ly(mensageiros, x = ~Rating, y = ~Aplicativo, type = 'bar', name = 'Mensageiros populares com maior avaliação',marker = list(color = c('#25D366','#FF00BF', '#E1306C', '#006AFF'))) %>%   layout(yaxis = list(categoryorder = "total descending")) %>% layout(title = "Mensageiros populares com maior avaliação")
+
+
                                                                                                                                                                              
 
 fig1
@@ -532,7 +554,7 @@ fig1
 aplicativos <- read.csv("aplicativos.csv")
 mensageiros <- aplicativos[1:4,]
 
-fig1 <- plot_ly(mensageiros, x = ~Instalacoes, y = ~Aplicativo, type = 'bar', name = 'Mensageiros populares com maior número de Downloads',color = I("rgba(119, 221, 119, 1)")) %>%   layout(yaxis = list(categoryorder = "total descending")) %>% layout(title = "Mensageiros populares com maior número de Downloads")
+fig1 <- plot_ly(mensageiros, x = ~Instalacoes, y = ~Aplicativo, type = 'bar', name = 'Mensageiros populares com maior número de Downloads',marker = list(color = c('#25D366','#FF00BF', '#E1306C', '#006AFF'))) %>%   layout(yaxis = list(categoryorder = "total descending")) %>% layout(title = "Mensageiros populares com maior número de Downloads")
                                                                                                                                                                              
 
 fig1
@@ -549,7 +571,7 @@ Nessa etapa estarei comparando as redes de video e imagem, Tik Tok, instagram e 
 
 Videos <- aplicativos[5:7,]
 
-fig1 <- plot_ly(Videos, x = ~Rating, y = ~Aplicativo, type = 'bar', name = 'Redes de video e imagem  com maior avaliação',color = I("rgba(119, 221, 119, 1)")) %>%   layout(yaxis = list(categoryorder = "total descending")) %>% layout(title = "Redes de video e imagem populares com maior avaliação")
+fig1 <- plot_ly(Videos, x = ~Rating, y = ~Aplicativo, type = 'bar', name = 'Redes de video e imagem  com maior avaliação',marker = list(color = c('#FE2C55','#F77737', '#fffc00'))) %>%   layout(yaxis = list(categoryorder = "total descending")) %>% layout(title = "Redes de video e imagem populares com maior avaliação")
                                                                                                                                                                              
 
 fig1
@@ -559,7 +581,7 @@ fig1
 ```{r}
 
 
-fig1 <- plot_ly(Videos, x = ~Instalacoes, y = ~Aplicativo, type = 'bar', name = 'Redes de video e imagem com maior número de Downloads',color = I("rgba(119, 221, 119, 1)")) %>%   layout(yaxis = list(categoryorder = "total descending")) %>% layout(title = "Redes de video e imagem com maior número de Downloads")
+fig1 <- plot_ly(Videos, x = ~Instalacoes, y = ~Aplicativo, type = 'bar', name = 'Redes de video e imagem com maior número de Downloads',marker = list(color = c('#FE2C55','#F77737', '#fffc00'))) %>%   layout(yaxis = list(categoryorder = "total descending")) %>% layout(title = "Redes de video e imagem com maior número de Downloads")
                                                                                                                                                                              
 
 fig1
@@ -576,7 +598,7 @@ Nessa etapa estarei comparando os players da categoria Entretenimento mais popul
 
 Entretenimento <- aplicativos[9:11,]
 
-fig1 <- plot_ly(Entretenimento, x = ~Rating, y = ~Aplicativo, type = 'bar', name = 'App de entretenimento  com maior avaliação',color = I("rgba(119, 221, 119, 1)")) %>%   layout(yaxis = list(categoryorder = "total descending")) %>% layout(title = "App de entretenimento populares com maior avaliação")
+fig1 <- plot_ly(Entretenimento, x = ~Rating, y = ~Aplicativo, type = 'bar', name = 'App de entretenimento  com maior avaliação',marker = list(color = c('#a8060e','#f10002', '#e39414'))) %>%   layout(yaxis = list(categoryorder = "total descending")) %>% layout(title = "App de entretenimento populares com maior avaliação")
                                                                                                                                                                              
 
 fig1
@@ -586,7 +608,7 @@ fig1
 ```{r}
 
 
-fig1 <- plot_ly(Entretenimento, x = ~Instalacoes, y = ~Aplicativo, type = 'bar', name = 'App de entretenimento com maior número de Downloads',color = I("rgba(119, 221, 119, 1)")) %>%   layout(yaxis = list(categoryorder = "total descending")) %>% layout(title = "App de entretenimento com maior número de Downloads")
+fig1 <- plot_ly(Entretenimento, x = ~Instalacoes, y = ~Aplicativo, type = 'bar', name = 'App de entretenimento com maior número de Downloads',marker = list(color = c('#a8060e','#f10002', '#e39414'))) %>%   layout(yaxis = list(categoryorder = "total descending")) %>% layout(title = "App de entretenimento com maior número de Downloads")
                                                                                                                                                                              
 
 fig1
@@ -628,6 +650,21 @@ tab <- plot_ly( type='table',
         )%>% layout(title = "30 Aplicativos mais populares")
 tab
 
+fig <- plot_ly(
+
+  type='histogram',
+
+  x=~ games$Rating , marker = list(color='orange') )  %>% layout(title = "Distribuição das médias de avaliação dos games com mais de 100 downloads") 
+
+fig
+
+fig2 <- plot_ly(
+
+  type='histogram',
+
+  x=~ gameTop30$Rating , marker = list(color='orange') )  %>% layout(title = "Distribuição das médias de avaliação dos 30 games mais populares") 
+
+fig2
 
 ```
 
@@ -663,7 +700,26 @@ tab <- plot_ly( type='table',
           line= list(width= 1.5, color = 'black'),font= list(family= "Helvetica", size= 12, color = c("black"))
         )
         )%>% layout(title = "30 games mais bem avaliados")
+
+
+
 tab
+
+fig <- plot_ly(
+
+  type='histogram',
+
+  x=~ games$Installs , marker = list(color='orange') )  %>% layout(title = "Distribuição das instalações de games com mais de 100 downloads") 
+
+fig
+
+fig2 <- plot_ly(
+
+  type='histogram',
+
+    x=~ gameTop30$Installs , marker = list(color='orange') )  %>% layout(title = "Distribuição das instalação dos 30 games melhores avaliados ") 
+
+fig2
 
 
 ```
@@ -674,4 +730,10 @@ No caso dos games, os mais bem avaliados são totalmente diferente dos mais popu
 Os Aplicativos mais populares nem sempre são os melhores avaliados. Em questão de popularidade para seu aplicativo viralizar a melhor estratégia é criar algo da categoria Social, Game ou Produtividade. A têndencia de se tornar algo padrão no mercado é mais importante do que ter boas reviews.
 
 
+
+## Referências
+@rdoc
+@plotlydoc
+@amaral2016introduccao
+@gpdata
 
